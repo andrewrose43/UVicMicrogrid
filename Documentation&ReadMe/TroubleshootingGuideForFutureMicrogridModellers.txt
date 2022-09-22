@@ -1,0 +1,30 @@
+Here are some ridiculous problems I had to deal with while creating the microgrid model, along with the workarounds/missing info. I hope that putting this information here will save future Simulink project workers a lot of trouble.
+
+The library I used is https://www.mathworks.com/matlabcentral/fileexchange/67060-systems-level-microgrid-simulation-from-simple-one-line-diagram and there’s a demo video for it at https://www.mathworks.com/videos/microgrid-system-development-and-analysis-part-3-using-simscape-power-systems-to-simulate-microgrids-1522853406434.html
+…and it has next to no documentation so you might want to know the following things:
+
+(I’ll refer to this library as the Bad Library. To avoid confusion: the Bad Library’s components are partially built out of components of the Simscape Electrical library.)
+
+
+
+PROBLEM 1: A WEIRD ERROR
+
+You may run into a bizarre error that suggests "The first block, modeled as a current source, cannot be connected in series with the inductive element of the second block. Add a high-value resistance in parallel with one of the two block.” This problem has nothing to do with your modeling work. It’s a bug in the Simscape Electrical library. To fix it, connect in parallel a Three-Phase Series RLC Load block with its inductive and capacitive components set to zero. I’ll refer to this stupid, unnecessary, infuriating load as the Scumbag Load.
+
+There is some documentation for the Simscape Electrical “Simplified Synchronous Machine” (SSM) block that mentions a similar problem for that block, which can lead to this problem when using the Bad Library’s generator blocks. But the Bad Library’s Variable Load block also has this same bug - and yet none of the Simscape Electrical components it’s made from mention this bug in their documentation.
+
+The SSM block’s documentation’s “Limitations” section mentions something about the required size of the Scumbag Load (https://www.mathworks.com/help/physmod/sps/powersys/ref/simplifiedsynchronousmachine.html), which may be relevant if your project uses a Bad Library generator block (which includes an SSM block). But when the bug showed up due to my Variable Load blocks, I found that the load could be arbitrarily small (one ten-billionth of a watt) and still prevent the error. When the load is that small, you can just pretend it’s not there, which is far simpler than figuring out a workaround to negate the effect of the Scumbag Load.
+
+Inexplicably, while writing this, I found that the Scumbag Load could be deleted from my project entirely without the bug reappearing. I have no idea why the bug vanished other than that it must have something to do with the components I added to the model since I first encountered the bug, which is weird because I didn’t add any other constant load. Who knows.
+
+
+
+PROBLEM 2: LACK OF BATTERY MODULE DOCUMENTATION
+
+Since the Bad Library has no documentation, here’s an explanation of some of the parameters of the “Energy Storage (PQ Model)” block, which basically simulates a battery. I had to figure all this out myself by testing the block’s behaviour in different scenarios with different settings. In exchange, you owe me your first-born child.
+
+“Upper/Lower Charge Limits [%]”: The battery will not discharge below the lower limit and it will not charge above the upper limit. There’s an exception to this, which I’ll describe below.
+
+“Enable Auto-Recharge”: The “SOC to Recharge [%]” parameter will only do anything if this box is checked. Otherwise, “SOC to Recharge [%]” does nothing.
+
+“SOC to Recharge [%]”: If the “Enable Auto-Recharge” box is checked, then when the battery discharges below the Lower Charge Limit, it will immediately stop everything it’s doing and charge itself to this level as fast as it can, even if this level is higher than the Upper Charge Limit. (That’s the exception I mentioned earlier.) Note that this parameter MUST be higher than the Lower Charge Limit, or Simulink will throw a tantrum.

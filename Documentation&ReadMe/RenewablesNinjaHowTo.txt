@@ -1,0 +1,23 @@
+I used the amazing website renewables.ninja to collect the wind and solar power output data for this project. It uses weather data and mechanical modelling of wind turbines to estimate the electrical output of solar and wind installations anywhere in the world.
+
+Here are all the settings I used to get our wind and solar data - mostly, these were simply the default settings when I used renewables.ninja, but I'm recording this in case the defaults change or anything.
+
+(To get the data in the format I've set up the model to accept, you'll need to do some fiddling: strip away everything except the timestamps and the power data, then put the timestamps in the first column and the power data in the second column.)
+
+BOTH
+Lat: 48.462959161722615
+Long: -123.31201647374814
+Dataset: MERRA-2
+Year: 2019
+Capacity: 1kW
+Don't bother with the "Include raw data" option
+
+SOLAR
+System loss: 0.1
+Tracking: [download a copy of the solar data for each of the three options here]
+Tilt: 35
+Azimuth: 180
+
+WIND
+Hub height: 80m
+Turbine model: GE 1.6

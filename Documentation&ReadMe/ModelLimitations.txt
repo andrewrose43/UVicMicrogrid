@@ -1,0 +1,24 @@
+Reasons why a real microgrid would perform better than the simulation:
+-10% system loss is assumed in the solar panels, but new panels are likely to be less wasteful.
+-The consumption data overstates electrical consumption because each 5-minute interval, the data comprises the peak in power consumption for those 5 minutes, not mean consumption. So UVic's real power consumption is less than the recorded data - we don't know how much less.
+-The model assumes that the battery never runs at maximum capacity - only at the rated charge/discharge capacity it's safe to run the batteries at for long periods. (The Saft datasheet notes that "Maximum duration is application-dependent", so we have no way of knowing how long these things can run at max capacity. The simple solution was to assume they never do.)
+-All locally-generated power is converted to AC and back before battery storage. A real setup would likely bypass this, reducing efficiency losses.
+
+
+Reasons why a real microgrid would perform worse than the simulation:
+-The model only includes about 90% of campus power consumption; the remaining 10% occurs through meters other than the four in the model. The data on that remaining 10% was not available to us.
+-The model assumes that the solar panels are mounted at a perfect 180-degree azimuth. Depending on how they're mounted (especially on existing buildings), this may not be feasible in reality.
+-We're not modeling self-discharge, since the library's battery module didn't allow for that.
+-The model assumes there are no line/transmission losses.
+-The model does not account for the decay of the batteries over time.
+
+
+Reasons why a real microgrid would perform unpredictably compared to the simulation:
+-When no tracking occurs, panels assume 35-degree tilt.
+-The model uses GE 1.6 turbines mounted at a height of 80 metres. Obviously, different turbines mounted at different heights will yield different results.
+-The model runs through 2019, the only year we have a complete set of data for (which is just as well, since it was the last normal year before the pandemic).
+-The solar and wind data is hour-by-hour, which is not very precise.
+-The data for the Saft battery gave current/power ratings at 50% state of charge (SOC) specifically for some reason; we assume that rating holds across the entire charge cycle, but in reality, it varies with SOC.
+-Saft's data said the batteries' AC roundtrip efficiency was "85-90%"; we assume 87.5% because that's exactly in the middle of that range. Obviously, real-world performance could be closer to either end of that range.
+-This is *tiny* to the point that it probably doesn't matter at all, but there is some random error due to jitter in the amount of recorded sold-back-to-the-grid power. (Long explanation: The amount of power sold back to the grid will be slightly underestimated because the battery will hit full charge between ticks. Between hitting full charge and the next tick, some sold power goes unrecorded. Though since the next discharge must start precisely on a tick, there is compensation there - the discharge might start late because it's delayed until the next tick. So statistically, this probably cancels out.)
+-Our model assumes only active power (no reactive power) is consumed on the UVic campus.
